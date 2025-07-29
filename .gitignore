@@ -1,0 +1,52 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# macOS / Linux / Windows system files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
+
+# Environment variables and secrets
+.env
+openai_key.txt
+
+# YOLO / Ultralytics generated files
+runs/
+*.pt
+*.onnx
+*.tflite
+*.yaml
+*.engine
+
+# Temporary image saves or uploads
+temp/
+uploads/
+*.jpg
+*.jpeg
+*.png
+
+# Dependency metadata
+pip-wheel-metadata/
+__pypackages__/
+
+# FastAPI auto-generated files (if any)
+*.db
+
+# Python test cache
+.pytest_cache/
