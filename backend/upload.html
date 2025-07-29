@@ -1,11 +1,63 @@
 <!DOCTYPE html>
-<html>
-<head><title>Upload Image</title></head>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Upload Ingredient Image</title>
+</head>
 <body>
   <h2>Upload Image</h2>
-  <form action="http://localhost:8000/upload/" method="POST" enctype="multipart/form-data">
+
+  <form id="uploadForm" enctype="multipart/form-data">
     <input type="file" name="file" required>
     <button type="submit">Upload</button>
   </form>
+
+  <h3>Detected Ingredients:</h3>
+  <ul id="ingredientsList"></ul>
+
+  <h3>Recipe:</h3>
+  <div id="recipeDisplay"></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const ingredientsList = document.getElementById('ingredientsList');
+    const recipeDisplay = document.getElementById('recipeDisplay');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+
+      const response = await fetch('http://localhost:8000/upload/', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      ingredientsList.innerHTML = '';
+      recipeDisplay.innerHTML = '';
+
+      if (data.detected_ingredients) {
+        for (let ingredient in data.detected_ingredients) {
+          const li = document.createElement('li');
+          li.textContent = `${ingredient} (${data.detected_ingredients[ingredient]})`;
+          ingredientsList.appendChild(li);
+        }
+      }
+
+      if (data.recipe) {
+        recipeDisplay.textContent = data.recipe;
+      }
+
+      if (data.image_url) {
+        const img = document.createElement('img');
+        img.src = data.image_url;
+        img.alt = 'Uploaded Image';
+        img.style.maxWidth = '300px';
+        document.body.appendChild(img);
+      }
+    });
+  </script>
 </body>
 </html>

@@ -3,14 +3,11 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 import shutil
 import os
-from openai import OpenAI
-from .yolomodel import detect_ingredients
 from dotenv import load_dotenv
+from yolomodel import detect_ingredients
+from llm import generate_recipe  # <-- Gemini-powered
 
 load_dotenv()
-api_key = os.getenv("GPT")
-client = OpenAI(api_key=api_key)
-
 
 app = FastAPI()
 app.mount("/temp", StaticFiles(directory="temp"), name="temp")
@@ -21,25 +18,21 @@ async def upload_image(file: UploadFile = File(...), background_tasks: Backgroun
     os.makedirs("temp", exist_ok=True)
 
     try:
+        # Save image
         with open(save_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
+        # Detect ingredients
         detected = detect_ingredients(save_path)
-        ingredients = ", ".join(detected.keys())
+        ingredients = list(detected.keys())
 
         if not ingredients:
             return JSONResponse(status_code=400, content={"error": "No ingredients detected."})
 
-        prompt = f"Create a creative recipe using the following ingredients: {ingredients}. Return ingredients list and step-by-step instructions."
+        # Generate recipe using Gemini
+        recipe = generate_recipe(ingredients)
 
-        response = client.chat.completion.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-            max_tokens=800
-        )
-        recipe = response["choices"][0]["message"]["content"]
-
+        # Clean up image after processing
         background_tasks.add_task(os.remove, save_path)
 
         return {
@@ -49,4 +42,5 @@ async def upload_image(file: UploadFile = File(...), background_tasks: Backgroun
         }
 
     except Exception as e:
+        print(f"Error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
