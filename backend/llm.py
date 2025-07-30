@@ -11,9 +11,15 @@ model = genai.GenerativeModel(model_name="gemini-2.5-pro")
 
 def generate_recipe(ingredients, preference=""):
     prompt = (
+        f"You are a smart chef assistant.\n"
         f"Ingredients: {', '.join(ingredients)}.\n"
-        f"Generate a {preference} recipe. "
-        f"Include a title, ingredients list, step-by-step instructions, and one optional substitution."
+        f"{'Preferences/Instructions: ' + preference if preference else ''}\n"
+        f"Generate a recipe based on these inputs.\n"
+        f"Include:\n"
+        f"- A title\n"
+        f"- A list of ingredients\n"
+        f"- Step-by-step cooking instructions\n"
+        f"- One optional substitution for flexibility"
     )
 
     try:
