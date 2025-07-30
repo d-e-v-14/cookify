@@ -5,40 +5,47 @@ import shutil
 import os
 from dotenv import load_dotenv
 from yolomodel import detect_ingredients
-from llm import generate_recipe  # <-- Gemini-powered
+from llm import generate_recipe  
+import logging
 
 load_dotenv()
 
 app = FastAPI()
 app.mount("/temp", StaticFiles(directory="temp"), name="temp")
-
+@app.get("/")
+def root():
+    return {
+        "message": "Welcome to the Smart Chef's Assistant API!",
+        "upload_endpoint": "/upload/",
+        "instructions": "Send a POST request with a file using multipart/form-data to /upload/ to get detected ingredients and a generated recipe."
+    }
+    
 @app.post("/upload/")
 async def upload_image(file: UploadFile = File(...), background_tasks: BackgroundTasks = None):
     save_path = f"temp/{file.filename}"
     os.makedirs("temp", exist_ok=True)
 
     try:
-        # Save image
+
         with open(save_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # Detect ingredients
         detected = detect_ingredients(save_path)
         ingredients = list(detected.keys())
 
         if not ingredients:
             return JSONResponse(status_code=400, content={"error": "No ingredients detected."})
 
-        # Generate recipe using Gemini
         recipe = generate_recipe(ingredients)
 
-        # Clean up image after processing
         background_tasks.add_task(os.remove, save_path)
-
+        logger = logging.getLogger("uvicorn.error")
+        logger.info(f"Detected: {detected}")
+        logger.info(f"Recipe: {recipe}")
+        
         return {
             "detected_ingredients": detected,
             "recipe": recipe,
-            "image_url": f"/temp/{file.filename}"
         }
 
     except Exception as e:

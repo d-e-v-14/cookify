@@ -12,16 +12,8 @@
     <button type="submit">Upload</button>
   </form>
 
-  <h3>Detected Ingredients:</h3>
-  <ul id="ingredientsList"></ul>
-
-  <h3>Recipe:</h3>
-  <div id="recipeDisplay"></div>
-
   <script>
     const form = document.getElementById('uploadForm');
-    const ingredientsList = document.getElementById('ingredientsList');
-    const recipeDisplay = document.getElementById('recipeDisplay');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -33,29 +25,13 @@
         body: formData
       });
 
-      const data = await response.json();
-
-      ingredientsList.innerHTML = '';
-      recipeDisplay.innerHTML = '';
-
-      if (data.detected_ingredients) {
-        for (let ingredient in data.detected_ingredients) {
-          const li = document.createElement('li');
-          li.textContent = `${ingredient} (${data.detected_ingredients[ingredient]})`;
-          ingredientsList.appendChild(li);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.image_url) {
+          window.location.href = `/results/${data.image_url.split('/').pop()}`;
         }
-      }
-
-      if (data.recipe) {
-        recipeDisplay.textContent = data.recipe;
-      }
-
-      if (data.image_url) {
-        const img = document.createElement('img');
-        img.src = data.image_url;
-        img.alt = 'Uploaded Image';
-        img.style.maxWidth = '300px';
-        document.body.appendChild(img);
+      } else {
+        alert("Upload failed. Please try again.");
       }
     });
   </script>

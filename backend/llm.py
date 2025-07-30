@@ -7,8 +7,7 @@ api_key = os.getenv("GEMINI_API_KEY")
 
 genai.configure(api_key=api_key)
 
-# Gemini-pro model
-model = genai.GenerativeModel(model_name="gemini-2.0-pro-exp")
+model = genai.GenerativeModel(model_name="gemini-2.5-pro")
 
 def generate_recipe(ingredients, preference=""):
     prompt = (
